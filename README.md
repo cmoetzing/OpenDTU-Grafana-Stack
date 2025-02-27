@@ -1,3 +1,7 @@
+# Attribution:
+* Forked from [Kraego/OpenDTU-Grafana-Stack](https://github.com/Kraego/OpenDTU-Grafana-Stack)
+* Dashboard and Telegraf files from [smainz/OpenDTU-MQTT-Telegraf-influxdb-integration](https://github.com/smainz/OpenDTU-MQTT-Telegraf-influxdb-integration)
+
 # Mosquitto-Telegraf-Influx-Grafana Stack
 
 [![Check compose file](https://github.com/Kraego/OpenDTU-Grafana-Stack/actions/workflows/yamlcheck.yml/badge.svg)](https://github.com/Kraego/OpenDTU-Grafana-Stack/actions/workflows/yamlcheck.yml)
@@ -15,15 +19,13 @@ It consists of:
 
 * The following ports must be open on host (so if you have a firewall unblock these ports)
   * `3000` for grafana (webinterface)
-  * `8883` or `1883` for mqtt broker (to receive publishes from openDTU)
-* on mac os install gsed for example with brew
-* if you want **the tls cert stuff** uncomment line 6-8 in the `mosquitto.conf` ([see this guide how to install certbot on host OS](#Lets-encrypt-certs))
+  * `1883` for mqtt broker (to receive publishes from openDTU)
 
 ## How to use it
 
 1. Clone the repo
     ```
-    git clone https://github.com/Kraego/OpenDTU-Grafana-Stack.git   
+    git clone https://github.com/Kraego/OpenDTU-Grafana-Stack.git
     ```
 2. Go to directory where you have cloned the repo
     ```
@@ -36,26 +38,5 @@ It consists of:
     ```
      ./init.sh
     ```
-7. Start up the whole stack
-   ```
-   docker-compose up -d
-   ```
-8. Open grafana: http://localhost:3000
+6. Open grafana: http://localhost:3000
    * Use the credentials configured in the .env file
-   * Add or create Dashboards (for opendtu see: https://github.com/Kraego/OpenDTU-Grafana-Howto)
-
-**YOUR DONE**
-
-## SELinux
-
-If you have SELinux installed and running, add `:Z` to all `volumes` entries in `docker-compose.yaml`, e.g.
-
-```
-  volumes:
-    - ./influxdb/data:/var/lib/influxdb2:Z
-```
-
-## Lets encrypt certs
-* **Install `Certbot` on your Host**
-  * update `[YOUR DOMAIN]` and `[DIR MOUNT OF MOSQUITTO CONTAINER ON HOST]` (./mosquitto/certs) in `mosquitto-copy-certs.sh`
-  * copy the file `mosquitto-copy-certs.sh` to your certbot renewal hooks dir (on Linux it is: /etc/letsencrypt/renewal-hooks/deploy) and make it executable (`chmod +x mosquitto-copy-certs.sh`)
