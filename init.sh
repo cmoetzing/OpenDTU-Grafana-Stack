@@ -34,6 +34,7 @@ sudo chown -R 472:0 ${DATA_DIR}/grafana/var
 
 cp -a mosquitto ${DATA_DIR}/
 cp -a telegraf ${DATA_DIR}/
+cp influxdb/*.flux ${DATA_DIR}/influxdb/config/
 
 echo "##### Pulling images"
 docker-compose pull
@@ -56,6 +57,13 @@ echo "##### The user token is: '$auth_token'"
 echo "##### Setting token in environment"
 sed -i '/^INFLUX_TOKEN=/s/=.*/='"$auth_token"'/' $ENV_FILE
 export INFLUX_TOKEN=$auth_token
+
+echo "##### Configuring data compaction in InfluxDB"
+docker-compose exec influxdb influx bucket create -n solar/15m -o $GRAFANA_ORG_NAME --retention 365d -t $auth_token
+docker-compose exec influxdb influx bucket create -n solar/1d -o $GRAFANA_ORG_NAME --retention 0 -t $auth_token
+docker-compose exec influxdb influx bucket update -n $INFLUX_BUCKET -o $GRAFANA_ORG_NAME --retention 30d -t $auth_token
+docker-compose exec influxdb influx task create -o $GRAFANA_ORG_NAME -t $auth_token -f /etc/influxdb2/downsample_15m.flux
+docker-compose exec influxdb influx task create -o $GRAFANA_ORG_NAME -t $auth_token -f /etc/influxdb2/downsample_1d.flux
 
 echo "##### Updating grafana datasource with new values from env"
 sed -i 's,\[TOKEN\],'$auth_token', g' $GRAFANA_DATASOURCES_FILE
